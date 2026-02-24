@@ -1,0 +1,20 @@
+# Dockerfile.legacy
+# Using 2.5 to avoid dead Debian package repositories while maintaining legacy compatibility
+FROM ruby:2.6
+
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential
+
+WORKDIR /build
+
+# Clone your specific fork
+RUN git clone https://github.com/techvoxinc/filepicker_client.git .
+
+# AUTO-VERSIONING (Using the safe dot separator)
+# Finds the version.rb file and appends '.shopvox' (e.g., changes '1.0.5' to '1.0.5.shopvox')
+RUN find lib -name "version.rb" -exec sed -i "s/VERSION = ['\"]\([^'\"]*\)['\"]/VERSION = '\1.shopvox'/" {} +
+
+# Build the gem
+RUN mkdir /pkg
+CMD gem build *.gemspec && mv *.gem /pkg/ && ls -l /pkg/
